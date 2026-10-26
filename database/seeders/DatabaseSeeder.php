@@ -10,16 +10,19 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        // akun untuk uji login API (dibuat hanya jika belum ada)
-        User::firstOrCreate(
+        // ADMIN: peran diberikan lewat forceFill (hanya dari seeder, bukan dari input pengguna)
+        $admin = User::firstOrCreate(
             ['email' => 'admin@kossinga.com'],
             ['name' => 'Admin KosSinga', 'password' => Hash::make('password123')]
         );
+        $admin->forceFill(['role' => 'admin'])->save();
 
-        // urutan penting: pemilik dulu, baru kos (kos menunjuk ke pemilik)
-        $this->call([
-            PemilikSeeder::class,
-            KosSeeder::class,
-        ]);
+        // PENGGUNA BIASA: untuk menguji bahwa akses ditolak (403)
+        User::firstOrCreate(
+            ['email' => 'user@kossinga.com'],
+            ['name' => 'Mahasiswa Uji', 'password' => Hash::make('password123')]
+        );
+
+        // ...$this->call([...]) milikmu tetap di bawah sini
     }
 }

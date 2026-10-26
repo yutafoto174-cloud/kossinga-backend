@@ -22,10 +22,10 @@ Route::get('/dashboard', function () {
     ]);
 })->middleware(['auth'])->name('dashboard');
 // Semua route di dalam group ini WAJIB login (middleware auth)
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
 Route::resource('kos', KosController::class)->parameters(['kos' => 'id']);
 });
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
 Route::resource('kos', KosController::class)->parameters(['kos' => 'id']);
 Route::get('pemilik/{id}', [KosController::class, 'pemilik'])->name('kos.pemilik');
 });

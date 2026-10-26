@@ -4,21 +4,25 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\KosController;
 use Illuminate\Support\Facades\Route;
 
-// cek cepat bahwa API hidup: GET /api/ping
-Route::get('/ping', function () {
-    return response()->json([
-        'status' => 'ok',
-        'app'    => config('app.name'),
-    ]);
-});
-
-// ===== PUBLIK: tidak butuh token =====
+// ===== PUBLIK =====
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// ===== TERPROTEKSI: wajib header  Authorization: Bearer <token> =====
+// ===== AUTHENTICATION: wajib login (token Bearer) =====
 Route::name('api.')->middleware('auth:sanctum')->group(function () {
-    Route::apiResource('kos', KosController::class)->parameters(['kos' => 'id']);
+
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // semua pengguna yang login boleh MEMBACA
+    Route::apiResource('kos', KosController::class)
+        ->only(['index', 'show'])
+        ->parameters(['kos' => 'id']);
+
+    // ===== AUTHORIZATION: hanya ADMIN yang boleh MENULIS =====
+    Route::middleware('role:admin')->group(function () {
+        Route::apiResource('kos', KosController::class)
+            ->only(['store', 'update', 'destroy'])
+            ->parameters(['kos' => 'id']);
+    });
 });
